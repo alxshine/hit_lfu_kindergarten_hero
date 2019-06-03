@@ -1,20 +1,22 @@
 import pygame
+import gpiozero
 from datetime import datetime
 
 bpm = 120
 millis_per_beat = 60000//bpm
 
 queued_sounds = set()
-buttons = [True, False, False, False]
+button_0 = gpiozero.Button(14)
+button_1 = gpiozero.Button(15)
+button_2 = gpiozero.Button(21)
+buttons = [button_0, button_1, button_2]
 
-pygame.mixer.init(frequency=44100, size=16, channels=2, buffer=1024)
+pygame.mixer.init(frequency=20050, size=-16, channels=2, buffer=512)
 
-bass = pygame.mixer.Sound('samples/BD.wav')
-clap = pygame.mixer.Sound('samples/kick.wav')
-hh = pygame.mixer.Sound('samples/CHH.wav')
-snare = pygame.mixer.Sound('samples/SD.wav')
-cymbal = pygame.mixer.Sound('samples/kick.wav')
-sounds = [bass, snare, hh, cymbal]
+bass = pygame.mixer.Sound('samples/G.wav')
+snare = pygame.mixer.Sound('samples/D.wav')
+hh = pygame.mixer.Sound('samples/C.wav')
+sounds = [bass, snare, hh]
 
 t = 0
 last_beat = datetime.now()
@@ -23,12 +25,12 @@ while True:
     dt = current_time - last_beat
     delta_millis = dt.microseconds // 1000
 
-    for i, v in enumerate(buttons):
-        if v:
+    for i, b in enumerate(buttons):
+        if b.is_pressed:
             queued_sounds.add(sounds[i])
 
     if delta_millis > millis_per_beat:
-        print("beat")
+        pygame.mixer.stop()
         for s in queued_sounds:
             s.play()
         queued_sounds.clear()
